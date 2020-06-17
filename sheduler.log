@@ -1,0 +1,119 @@
+2020-06-14 22:59:48,090 - Sheduler - INFO - Вызов функции: double_function
+2020-06-14 22:59:48,095 - Sheduler - INFO - Результат: 4
+2020-06-14 23:02:51,940 - Sheduler - INFO - Вызов функции: double_function
+2020-06-14 23:02:51,955 - Sheduler - INFO - Результат: 4
+2020-06-14 23:05:04,285 - Sheduler - INFO - Вызов функции: double_function
+2020-06-14 23:05:04,286 - Sheduler - INFO - Результат: 4
+2020-06-14 23:05:55,984 - Sheduler - INFO - Вызов функции: double_function
+2020-06-14 23:05:55,987 - Sheduler - INFO - Результат: 4
+2020-06-14 23:06:17,121 - Sheduler - INFO - Вызов функции: double_function
+2020-06-14 23:09:05,285 - Sheduler - INFO - Вызов с параметрами *args, {*args}, **kwargs, {**kwargs}
+2020-06-14 23:10:26,095 - Sheduler - INFO - Вызов с параметрами *args, (2,), **kwargs, {}
+2020-06-14 23:11:15,234 - Sheduler - INFO - Вызов с параметрами args=(2,), kwargs={}
+2020-06-14 23:14:48,592 - Sheduler.double_function - INFO - Вызов  double_function с параметрами args=(2,), kwargs={}
+2020-06-14 23:16:26,649 - Sheduler.double_function - INFO - Вызов с параметрами args=(2,), kwargs={}
+2020-06-14 23:18:50,906 - Sheduler.double_function - INFO - Вызов с параметрами args=(2,), kwargs={}
+2020-06-14 23:18:50,941 - Sheduler.add_himself - INFO - Вызов с параметрами args=(2,), kwargs={}
+2020-06-14 23:18:50,943 - Sheduler.add_himself - INFO - Вызов с параметрами args=('a',), kwargs={}
+2020-06-14 23:18:50,945 - Sheduler.double_function - INFO - Вызов с параметрами args=('a',), kwargs={}
+2020-06-14 23:20:34,078 - Sheduler - INFO - MAIN
+2020-06-14 23:22:13,420 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:22:13,422 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:22:13,425 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:22:13,426 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:25:21,347 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:25:21,349 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-14 23:25:21,361 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:25:21,362 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-14 23:25:21,364 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:25:21,370 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-14 23:25:21,371 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:25:21,373 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-14 23:26:08,043 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:26:08,043 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-14 23:26:08,043 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:26:08,043 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-14 23:26:08,043 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:26:08,043 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-14 23:26:08,047 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:26:08,047 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-14 23:26:27,904 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:26:27,906 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-14 23:26:27,906 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:26:27,908 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-14 23:26:27,908 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:26:27,910 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-14 23:26:27,910 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:26:27,911 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-14 23:42:43,595 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:42:43,606 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-14 23:42:43,606 - Sheduler.double_function.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:42:43,608 - Sheduler.double_function.add_himself - DEBUG - Результат: 4
+2020-06-14 23:42:43,608 - Sheduler.double_function.add_himself.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:42:43,637 - Sheduler.double_function.add_himself.add_himself - DEBUG - Результат: aa
+2020-06-14 23:42:43,637 - Sheduler.double_function.add_himself.add_himself.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:42:43,645 - Sheduler.double_function.add_himself.add_himself.double_function - DEBUG - Результат: aa
+2020-06-14 23:44:07,346 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:44:07,352 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-14 23:44:07,352 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:44:07,354 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-14 23:44:07,354 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:44:07,355 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-14 23:44:07,356 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:44:07,357 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-14 23:58:23,864 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:58:23,866 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-14 23:58:23,866 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:58:23,868 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-14 23:58:23,868 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:58:23,869 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-14 23:58:23,869 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:58:23,871 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-14 23:58:52,703 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:58:52,718 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-14 23:58:52,718 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-14 23:58:52,720 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-14 23:58:52,721 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:58:52,723 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-14 23:58:52,723 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-14 23:58:52,725 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-15 00:01:08,708 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 00:01:08,709 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-15 00:01:08,710 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 00:01:08,726 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-15 00:01:08,726 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 00:01:08,728 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-15 00:01:08,728 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 00:01:08,730 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-15 00:01:31,737 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 00:01:31,740 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-15 00:01:31,740 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 00:01:31,743 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-15 00:01:31,743 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 00:01:31,744 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-15 00:01:31,744 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 00:01:31,746 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-15 00:02:11,673 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 00:02:11,674 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-15 00:02:11,675 - Sheduler.add_himself - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 00:02:11,694 - Sheduler.add_himself - DEBUG - Результат: 4
+2020-06-15 00:02:11,695 - Sheduler.add_himself - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 00:02:11,700 - Sheduler.add_himself - DEBUG - Результат: aa
+2020-06-15 00:02:11,700 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 00:02:11,702 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-15 08:24:25,519 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 08:24:25,543 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-15 08:24:25,544 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 08:24:25,548 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-15 08:56:02,750 - Sheduler - INFO - Program started
+2020-06-15 15:13:04,898 - Sheduler - INFO - dddfdfdfdfdf
+2020-06-15 15:13:52,029 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 15:13:52,043 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-15 15:13:52,044 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 15:13:52,046 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-15 15:16:54,167 - Sheduler.double_function - INFO - Вызов с args=(2,), kwargs={}
+2020-06-15 15:16:54,170 - Sheduler.double_function - DEBUG - Результат: 4
+2020-06-15 15:16:54,171 - Sheduler.double_function - INFO - Вызов с args=('a',), kwargs={}
+2020-06-15 15:16:54,173 - Sheduler.double_function - DEBUG - Результат: aa
+2020-06-15 15:18:47,375 - Sheduler.check_new_task_query - INFO - Вызов с args=(<__main__.Get_requests object at 0x000001215C4FC848>,), kwargs={}
+2020-06-15 15:18:47,805 - Sheduler.check_new_task_query - DEBUG - Результат: [{'Позначка часу': '12.06.2020 18:50:35', 'Фирма-Продавец': 'Quality', 'Тип обработки, для которой я заказал(а) ключевые отчеты': 'FEE', 'Електронна адреса': 'vikolo@i.ua', 'status': ''}, {'Позначка часу': '12.06.2020 19:53:01', 'Фирма-Продавец': 'Echelon', 'Тип обработки, для которой я заказал(а) ключевые отчеты': 'FEE', 'Електронна адреса': 'vasilij.kolomiets@gmail.com', 'status': ''}, {'Позначка часу': '12.06.2020 19:54:37', 'Фирма-Продавец': 'Quality', 'Тип обработки, для которой я заказал(а) ключевые отчеты': 'Orders Returns', 'Електронна адреса': 'vikolo@i.ua', 'status': ''}, {'Позначка часу': '14.06.2020 13:17:13', 'Фирма-Продавец': 'Bike', 'Тип обработки, для которой я заказал(а) ключевые отчеты': 'FEE', 'Електронна адреса': 'ychudnovs@gmail.com', 'status': ''}, {'Позначка часу': '14.06.2020 13:17:33', 'Фирма-Продавец': 'Echelon', 'Тип обработки, для которой я заказал(а) ключевые отчеты': 'Orders Returns', 'Електронна адреса': 'chudnovs@ua.fm', 'status': ''}, {'Позначка часу': '14.06.2020 13:20:10', 'Фирма-Продавец': 'Quality', 'Тип обработки, для которой я заказал(а) ключевые отчеты': 'Варіант 3', 'Електронна адреса': 'abco.tech7@gmail.com', 'status': ''}, {'Позначка часу': '14.06.2020 13:20:22', 'Фирма-Продавец': 'Quality', 'Тип обработки, для которой я заказал(а) ключевые отчеты': 'Варіант 3', 'Електронна адреса': 'abco.tech7@gmail.com', 'status': ''}]

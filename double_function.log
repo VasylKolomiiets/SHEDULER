@@ -1,0 +1,20 @@
+2020-06-15 14:38:22,155 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:38:22,157 - double_function - INFO - Результат: 4
+2020-06-15 14:39:10,458 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:39:10,458 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:39:10,460 - double_function - INFO - Результат: aa
+2020-06-15 14:39:10,460 - double_function - INFO - Результат: aa
+2020-06-15 14:40:12,006 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:40:12,006 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:40:12,006 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:40:12,008 - double_function - INFO - Результат: 4
+2020-06-15 14:40:12,008 - double_function - INFO - Результат: 4
+2020-06-15 14:40:12,008 - double_function - INFO - Результат: 4
+2020-06-15 14:40:36,850 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:40:36,850 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:40:36,850 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:40:36,850 - double_function - INFO - Вызов функции: double_function
+2020-06-15 14:40:36,853 - double_function - INFO - Результат: 4
+2020-06-15 14:40:36,853 - double_function - INFO - Результат: 4
+2020-06-15 14:40:36,853 - double_function - INFO - Результат: 4
+2020-06-15 14:40:36,853 - double_function - INFO - Результат: 4
