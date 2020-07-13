@@ -1,15 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri May  8 19:47:21 2020
-
-@author: Vasil
-"""
-
-'''
- +  fee preview найти / скачать (или задать запрос)
-'''
-
-
 from lxml import objectify  # etree,
 from sys import getsizeof
 from mws import mws
@@ -25,6 +14,7 @@ import sqlite3
 
 #  docs:
 '''
+
 #    report.response.iter_lines() - итератор по строка. всё в bytes
 
     report.response.headers
@@ -163,7 +153,7 @@ def get_clietns():
             ]
 
 
-def get_report_ids(x, reportstart, reportend, 
+def get_report_ids(x, reportstart, reportend,
                    reports_types=(b"_GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2_",),
                    fromdate=None, todate=None):
     reports = []
@@ -235,7 +225,6 @@ def get_report_ids(x, reportstart, reportend,
     d2 = dt.fromisoformat('2019-12-30T16:44:20+00:00')
     d1 = dt.fromisoformat('2019-12-07T16:44:20+00:00')
     (d2-d1).days
-
 
     return reports, calls_count
 

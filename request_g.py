@@ -4,7 +4,9 @@ Created on Thu May 21 12:59:24 2020
 
 @author: Vasil
 """
-from  logger import log
+from datetime import datetime
+
+from logger import log
 
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -24,8 +26,8 @@ class Get_requests:
         self.sheet = connect.open('processing_requests').sheet1
 
     """
-    1               2               3                                                       4                        5
-    Позначка часу	Фирма-Продавец	Тип обработки, для которой я заказал(а) ключевые отчеты	Електронна адреса	     status
+    1               2               3                                                       4                        5        6
+    Позначка часу	Фирма-Продавец	Тип обработки, для которой я заказал(а) ключевые отчеты	Електронна адреса	     status   out_time
 12.06.2020 18:50:35	Quality	        FEE	                                                    vikolo@i.ua	
 12.06.2020 19:53:01	Echelon	        FEE	                                                    vasilij.kolomiets@gmail.com	
 12.06.2020 19:54:37	Quality	        Orders Returns	                                        vikolo@i.ua	
@@ -36,12 +38,12 @@ class Get_requests:
     def check_new_task_query(self):
         '''
         Check google sheet for new task requests
-     
+
         Parameters
         ----------
-        sheet : google shet from api 
+        sheet : google shet from api
             DESCRIPTION.
-    
+
         Returns
         -------
         list
@@ -51,19 +53,21 @@ class Get_requests:
                   'Фирма-Продавец': 'Quality',
                   'Тип обработки, для которой я заказал(а) ключевые отчеты': 'FEE',
                   'Електронна адреса': 'vikolo@i.ua',
-                  'status': ''},]    
-    
+                  'status': ''},]
+
         '''
         data = self.sheet.get_all_records()
         return [new_task for new_task in data if not new_task["status"]]
-    
+
     @log
     def mark_as_DONE(self, time_str):
-        pass
+        row_found = self.sheet.find(time_str).row
+        self.sheet.update_cell(row_found, 5, "__DONE__")
+        self.sheet.update_cell(row_found, 6, datetime.today().isoformat())
 
 
 '''
-data = sheet.get_all_records()z = 
+data = sheet.get_all_records()
 pprint(data)
 
 row = sheet.row_values(1)
@@ -83,5 +87,4 @@ sheet.delete_row(4)
 
 len(data)
 print("cols=", max([len(row) for row in data]))
-''' 
-
+'''

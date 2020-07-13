@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-  DCU
-"""
-Created on Tue May 19 15:46:57 2020
-
-@author: Vasil
-"""
-
-
 """
    формат данных:
        <any_text> ::>  <client_name> :: <report_name>   <:: <any_text>
@@ -13,27 +5,6 @@ Created on Tue May 19 15:46:57 2020
        client_name := [0-1a-zа-я_- ]
        report_name := snapshot | FBA_fee |  returns
 """
-# =============================================================================
-#
-#   1. получить задачу
-#   прочесть письмо, проверить синтаксис  subj,
-#   итог: получена конкретная задача по конкретному клиенту в конкретное время (время отправки письма)
-#
-#   2. выполнить задачу
-#       проверить наличие ключевых отчетов. если нет - отправить ответ письмом
-#       если есть, но в ожидании - поставить проверку готовности в очередь (+письмо?)
-#       если ключевые отчеты готовы - поставить на скачивание:
-#           - ключевые файлы
-#           - дополнительные файлы по списку (если есть)
-#                 проверить наличие ключевых отчетов. если нет - сделать запросы на отчтеты
-#                 если есть, но в ожидании - поставить проверку готовности в очередь (+письмо?)
-#       обработать полученные файлы
-#       сформировать (и отформатировать) итоговые файлы
-#
-#   3. ответить письмом (файлы исходые и итоговые в архиве с комментариями в теле письма)
-#
-#
-# =============================================================================
 from lxml import objectify  # etree,
 from sys import getsizeof
 from mws import mws
@@ -41,7 +12,10 @@ import pandas as pd
 import io
 import time
 from pathlib import Path
-from datetime import datetime as dt
+
+from dataclasses import dataclass, field
+import typing
+
 
 DAYS_REPORT_FRESH = 3
 
@@ -62,14 +36,41 @@ b"_GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA_"
 b"_GET_FBA_RECONCILIATION_REPORT_DATA_"
 # DATE_RANGE_FINANCIAL_TRANSACTION  (undocumented)
 b"_GET_DATE_RANGE_FINANCIAL_TRANSACTION_DATA_"
+# fee_preview  (undocumented)
+b"_GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA_"
 
 
-def subj_analize(subj):
-    pass
+def is_report_created(task):
+    """
 
+    Parameters
+    ----------
+    task : TYPE
+        DESCRIPTION.
 
-def is_report_created(report_type):
-    ...
+    Returns
+    -------
+    None.
+
+    """
+
+    def fee_checker(task):
+
+        return None
+
+    def snapshots_checker(task):
+        return None
+
+    def adjustments_checker(task):
+        return None
+
+    cheker = {
+        "FEE": fee_checker,
+        "SNAPSHOTS": snapshots_checker,
+        "ADJUSTMENTS": adjustments_checker,
+        }
+
+    return cheker[task]
 
 
 def is_report_done(report_type):
@@ -78,6 +79,7 @@ def is_report_done(report_type):
 
 def reports(task_type):
     pass
+
 
 ''' Quality:
 MWS Seller Id: AKARFMLPQ2SZG
