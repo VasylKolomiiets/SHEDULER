@@ -28,16 +28,16 @@ class Get_requests:
     """
     1               2               3                                                       4                        5        6
     Позначка часу	Фирма-Продавец	Тип обработки, для которой я заказал(а) ключевые отчеты	Електронна адреса	     status   out_time
-12.06.2020 18:50:35	Quality	        FEE	                                                    vikolo@i.ua	
-12.06.2020 19:53:01	Echelon	        FEE	                                                    vasilij.kolomiets@gmail.com	
-12.06.2020 19:54:37	Quality	        Orders Returns	                                        vikolo@i.ua	
+12.06.2020 18:50:35	Quality	        FEE	                                                    vikolo@i.ua
+12.06.2020 19:53:01	Echelon	        FEE	                                                    vasilij.kolomiets@gmail.com
+12.06.2020 19:54:37	Quality	        Orders Returns	                                        vikolo@i.ua
 
     """
 
     @log
     def check_new_task_query(self):
-        '''
-        Check google sheet for new task requests
+        """
+        Check google sheet for new task requests.
 
         Parameters
         ----------
@@ -55,12 +55,13 @@ class Get_requests:
                   'Електронна адреса': 'vikolo@i.ua',
                   'status': ''},]
 
-        '''
+        """
         data = self.sheet.get_all_records()
         return [new_task for new_task in data if not new_task["status"]]
 
     @log
     def mark_as_DONE(self, time_str):
+        """Mark request string in googlesheet as DONE."""
         row_found = self.sheet.find(time_str).row
         self.sheet.update_cell(row_found, 5, "__DONE__")
         self.sheet.update_cell(row_found, 6, datetime.today().isoformat())

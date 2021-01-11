@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "SHCEDULER",
+            "database": "${workspaceFolder:SHEDULER}/clients.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}

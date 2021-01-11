@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['C:\\Users\\Vasil\\.spyder-py3\\temp.py']
+recent_files = ['models.py', 'main_sсheduler.py', 'api2api.py', 'request_g.py', 'logger.py', '..\\..\\Projects\\Chud_Amaz\\Soft\\Recon5_3_formattimg.py', '..\\..\\Projects\\Chud_Amaz\\Soft\\Fee_discrep.py', 'my_utils.py', '..\\..\\Projects\\Chud_Amaz\\Soft_in_dev\\moduled_way\\package_processing.py', '..\\..\\Projects\\Chud_Amaz\\Soft_in_dev\\moduled_way\\Recon_moduledl.py', '..\\..\\Projects\\Chud_Amaz\\Soft_in_dev\\moduled_way\\data_processing.py', '..\\..\\Projects\\Chud_Amaz\\Soft_in_dev\\moduled_way\\excel_formatting.py', 'C:\\Users\\Vasil\\Anaconda3\\envs\\plotly_dash\\lib\\site-packages\\mws\\mws.py', 'C:\\users\\vasil\\anaconda3\\envs\\plotly_dash\\lib\\site-packages\\pandas\\core\\frame.py', 'C:\\users\\vasil\\anaconda3\\envs\\plotly_dash\\lib\\site-packages\\pandas\\_config\\config.py']
 

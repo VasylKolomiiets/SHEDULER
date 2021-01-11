@@ -168,14 +168,12 @@ def get_report_ids(x, reportstart, reportend,
             todate=todate,
             max_count=b"100",
             types=reports_types,
+            next_token=next_token
             )
 
         x_xml = x_list.response.text
         print(x_xml)
         root = objectify.fromstring(x_xml)
-
-        next_token = None if not root.GetReportRequestListResult.HasNext else \
-            root.GetReportRequestListResult.NextToken
 
         for el in root.GetReportRequestListResult.ReportRequestInfo:
             report = Report_dates(
@@ -195,7 +193,10 @@ def get_report_ids(x, reportstart, reportend,
                 report.CompletedDate = el.CompletedDate.text
                 reports.append(report)
 
+        next_token = None if not root.GetReportRequestListResult.HasNext else \
+            root.GetReportRequestListResult.NextToken
         is_next = bool(next_token)
+
         sleep120(time_start, calls_count)
         calls_count += 1
 
@@ -220,11 +221,6 @@ def get_report_ids(x, reportstart, reportend,
                     __[work_i] = False
                     work_i, work_EndDate = irep, __[irep].EndDate
     __ = [r for r in __ if r]   # удаляем "помеченные на удаление"
-    __  # не более  2-х елементов И  дата конца- менее недели от концп отчета (старт?)
-
-    d2 = dt.fromisoformat('2019-12-30T16:44:20+00:00')
-    d1 = dt.fromisoformat('2019-12-07T16:44:20+00:00')
-    (d2-d1).days
 
     return reports, calls_count
 
@@ -356,3 +352,33 @@ z = clients[0].x_report.request_report(r_type, start_date=b"2020-03-01T00:00:00+
 zzz = clients[0].x_report.get_report_request_list(types=(r_type,))
 print(zzz.response.text)
 """
+
+
+
+'''   hash для проверки целостности полученного  r.response.header
+ for key,val in r.response.headers.items(): print(key,":", val)
+Server : Server
+Date : Fri, 17 Jul 2020 17:51:17 GMT
+Content-Type : text/plain;charset=Cp1252        # ---- ! ----  coding
+Content-Length : 31287
+Connection : keep-alive
+x-mws-quota-max : 60.0
+x-mws-quota-remaining : 53.0                    # ---- ! ----  trottling
+x-mws-quota-resetsOn : 2020-07-17T18:37:00.000Z
+Content-MD5 : Q8pkh4Ys9a+OfdYhSkz/Sg==
+x-mws-response-context : UB91thltAjCscqVpaGmZmKfejuENf400t/OBFP88uIGm34LGtJ/+BhjMyTUOrf14qI4ww1LUBn8=, MGqGq7YIvSUK8dQCsPsojktqzSO5u5461mh8rCP28JjA/4DEPjHTXCnmpARrZGV75kIvrXsQiiU=
+x-amz-request-id : aabc6d23-ad3f-42d9-9dd2-72c74f6d05fc
+x-mws-request-id : aabc6d23-ad3f-42d9-9dd2-72c74f6d05fc
+x-mws-timestamp : 2020-07-17T17:51:17.041Z
+Vary : Content-Type,Accept-Encoding,X-Amzn-CDN-Cache,X-Amzn-AX-Treatment,User-Agent
+x-amz-rid : N306V13J1XQQ3CBJ3D54
+
+'''
+
+'''
+    d2 = dt.fromisoformat('2019-12-30T16:44:20+00:00')
+    d1 = dt.fromisoformat('2019-12-07T16:44:20+00:00')
+    (d2-d1).days
+
+
+'''

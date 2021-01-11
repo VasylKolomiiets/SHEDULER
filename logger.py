@@ -12,9 +12,7 @@ from functools import wraps
 
 
 def log(func):
-    """
-    Логируем какая функция вызывается.
-    """
+    """Логируем какая функция вызывается."""
     @wraps(func)
     def wrap_log(*args, **kwargs):
         logger = logging.getLogger(f"Sheduler.{func.__name__}")
