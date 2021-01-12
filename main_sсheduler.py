@@ -87,7 +87,7 @@ from data_processing import data_processing, excel_writer
 from excel_formatting import excel_file_formatting
 
 
-@lru_cache(1024)
+# @lru_cache(1024)
 def get_client_token(cursore, client_id):
     """Connect to Amazon server."""
     record = cursore.execute(f'SELECT * FROM auth_code WHERE id={client_id}').fetchone()
@@ -161,7 +161,7 @@ def add_new_time_to_check_news(cursor, hours=2):
     conn.commit()
 
 
-@lru_cache(1024)
+# @lru_cache(1024)
 def get_client_id_by_name(cursor, client_name):
     """Receiving client_id by client name."""
     return cursor.execute(
@@ -169,7 +169,7 @@ def get_client_id_by_name(cursor, client_name):
         (client_name,)).fetchone()["id"]   # have to be only one result in DB
 
 
-@lru_cache(1024)
+# @lru_cache(1024)
 def task_type_id(cursor, task_type_name):
     """Receiving task_type_id by task type name."""
     return cursor.execute(
@@ -357,7 +357,7 @@ def auto_report_shedule(cursor, report_data, report_amazon_id):
     conn.commit()
 
 
-@lru_cache(1024)
+# @lru_cache(1024)
 def get_report_usual_name(cursor, report_id):
     """Get from DB report usual name."""
     return cursor.execute(""" SELECT usual_name FROM tasks_reports WHERE id=?  """,
@@ -470,10 +470,12 @@ def pick_finished_tasks(cursor, renewed_tasks: set) -> dict:
 
     """
     tasks_to_work_out = dict()
-    for task in renewed_tasks:
-        rezult = cursor.execute("SELECT status == ? FROM reports_sheduled WHERE task_id=?",
+    for task in renewed_tasks:  # TODO: sum() == count()
+        rezult = cursor.execute("""SELECT status == ? as zo FROM reports_sheduled
+                                    WHERE task_id=? and saved""",
                                 ('_DONE_', task.sheduled_task_id, )).fetchall()
-        if all(rezult):
+        zeroones = [row["zo"] for row in rezult]
+        if all(zeroones):
             tasks_to_work_out[task.sheduled_task_id] = task
 
     return tasks_to_work_out
@@ -641,6 +643,7 @@ while True:     # for i in range(20):
 
     #  --
     sheduled_reports = get_sheduled_reports(c)
+    print({f"sheduled_reports={sheduled_reports}"})
     tasks_with_new_done_report = set()
     for report in sheduled_reports:
         task = sheduled_tasks[report.task_id]   # get_report_task

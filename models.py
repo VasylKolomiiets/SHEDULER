@@ -60,6 +60,7 @@ class ScheduledReport:
     task_id: int = 0
     report_id: int = 0
     start_time: str = ""
+    amzn_rqst_id: str = ""
     amzn_rprt_id: str = ""
     date_from: str = ""
     date_to: str = ""

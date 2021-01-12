@@ -310,21 +310,21 @@ def get_handmade_report_params(c, task_type_id):
 
     '''
     handmade_report_params = c.execute(
-        '''SELECT * FROM tasks_reports
-            WHERE is_handmade and (task_type_id=?)
-        ''',
+        '''SELECT * FROM tasks_reports WHERE is_handmade and (task_type_id=?) ''',
         (task_type_id,)).fetchall()
 
     if len(handmade_report_params) > 1:
         assert False, "Больше одного 'handmade' отчета"
 
-    pattern_id = handmade_report_params[0][0]
-    reportstart = now_plus_datetime_iso_str(days=-handmade_report_params[0][5])
-    reportend = now_plus_datetime_iso_str(days=-handmade_report_params[0][6])
-    report_amz_name = handmade_report_params[0][3]
-    usual_name = handmade_report_params[0][4]
-    min_duration = handmade_report_params[0][7]
-    files_to_get = handmade_report_params[0][-1]
+    params_row = handmade_report_params[0]
+
+    pattern_id = params_row["id"]
+    reportstart = now_plus_datetime_iso_str(days=-params_row["minus_days_from"])
+    reportend = now_plus_datetime_iso_str(days=-params_row["minus_days_to"])
+    report_amz_name = params_row["report_amz_name"]
+    usual_name = params_row["usual_name"]
+    min_duration = params_row["min_duration"]
+    files_to_get = params_row["files_to_get"]
 
     return ReportsData(pattern_id,
                        reportstart, reportend,
@@ -385,7 +385,8 @@ def auto_reports(c, task, report_dates):
     # TODO: now only one report each type!!
     # it only for - SNAPSHOTS - not date range!
     # TODO:  ceck parameter __ALL__ / __ONE__
-    '''
+    """
+    Auto report parameters collectinh.
 
     Parameters
     ----------
@@ -397,8 +398,7 @@ def auto_reports(c, task, report_dates):
     reportend: byte - end date (in ISO format) to collect data for report.
     report_amz_name: str - Amazon report name
 
-    '''
-
+    """
     auto_sheduled = c.execute(
         '''SELECT * FROM reports_sheduled INNER JOIN tasks_reports
             ON reports_sheduled.report_id = tasks_reports.id
@@ -406,15 +406,15 @@ def auto_reports(c, task, report_dates):
         (task.sheduled_task_id,)).fetchall()
 
     rez = []
-    for auto_report_params in auto_sheduled:
-        report_id = auto_report_params[0]       # real report ID!! not report type ID here!
-        # reportstart = report_dates.StartDate   # EQ tosnapshots dates !!
-        reportstart = now_plus_datetime_iso_str(days=-365*2)
-        reportend = datetime_now_iso_str()         # ... filled for snapshots
-        report_amz_name = auto_report_params[14]  # 3
-        usual_name = auto_report_params[15]       # 4
-        min_duration = auto_report_params[16]     # 7 in tasks_reports
-        files_to_get = auto_report_params[-1]
+    for joint_params in auto_sheduled:
+        report_id = joint_params["id"]       # real report ID!! not report type ID here!
+        # reportstart = report_dates.StartDate    # EQ tosnapshots dates !!
+        reportstart = now_plus_datetime_iso_str(days=-365*2)  # TODO: to DB !!! ???
+        reportend = datetime_now_iso_str()         # ... filled for snapshots  # TODO: to DB ???
+        report_amz_name = joint_params["report_amz_name"]  # 3
+        usual_name = joint_params["usual_name"]       # 4
+        min_duration = joint_params["min_duration"]     # 7 in tasks_reports
+        files_to_get = joint_params["files_to_get"]
 
         rez.append(ReportsData(report_id,
                                reportstart, reportend,
@@ -534,4 +534,4 @@ def get_report_file(x, amazon_report_id):
 
 
 if __name__ == "__main__":
-    assert False, "main api2api"
+    pass
