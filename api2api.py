@@ -7,11 +7,11 @@
        client_name := [0-1a-zа-я_- ]
        report_name := snapshot | FBA_fee |  returns
 
-                                TR  NEXT IN HOUR
-    get_report_request_list     10  45  80
-    get_report_list             10  60  60
-    get_report                  15  60  60
-    request_report              15  60  60
+                                TR  NEXT(secs) IN HOUR
+    get_report_request_list     10  45          80     60*60 / (80 - 10) = 51.4
+    get_report_list             10  60          60     60*60 / (60 - 10) = 72
+    get_report                  15  60          60     60*60 / (60 - 15) = 80
+    request_report              15  60          60
 
     GetReportRequestListByNextToken 30 2 1800
 
@@ -145,8 +145,8 @@ snapshots:
 
 
 def amazon_connect(client,
-                   access_key='AKIAJPLD4BKK4HDRBAXA',
-                   secret_key='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',
+                   access_key,
+                   secret_key,
                    region="US",
                    ):
     """Return client connection to Amazon."""

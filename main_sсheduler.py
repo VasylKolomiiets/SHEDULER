@@ -53,6 +53,7 @@
     # time_from_midnight = (now - midnight)
 """
 import sqlite3
+from functools import lru_cache
 
 import time
 
@@ -86,13 +87,12 @@ from data_processing import data_processing, excel_writer
 from excel_formatting import excel_file_formatting
 
 
+@lru_cache(1024)
 def get_client_token(cursore, client_id):
     """Connect to Amazon server."""
     record = cursore.execute(f'SELECT * FROM auth_code WHERE id={client_id}').fetchone()
     amz_conn = ClientConn(*record)
     return amz_conn
-
-
 
 
 @log
@@ -108,7 +108,7 @@ def get_sheduled_tasks(cursor):
     tasks = dict()
 
     records = cursor.execute('SELECT * FROM tasks_sheduled WHERE not finished').fetchall()
-    tasks = {r[0]: ScheduledTask(*r) for r in records}
+    tasks = {r["id"]: ScheduledTask(*r) for r in records}
     return tasks
 
 
@@ -142,7 +142,7 @@ def time_to_check_news(cursor, hours=2):
     to_check = cursor.execute('SELECT * FROM check_news WHERE not is_checked').fetchall()
     time_to_check = True
     if to_check:
-        if to_check[-1][1] <= datetime_now_iso_str():  # dt.datetime.fromisoformat()
+        if to_check[-1]['check_time'] <= datetime_now_iso_str():
             set_news_checked(cursor)
         else:
             time_to_check = False
@@ -161,18 +161,20 @@ def add_new_time_to_check_news(cursor, hours=2):
     conn.commit()
 
 
+@lru_cache(1024)
 def get_client_id_by_name(cursor, client_name):
     """Receiving client_id by client name."""
     return cursor.execute(
         'SELECT id FROM auth_code WHERE firms_name=?',
-        (client_name,)).fetchone()[0]   # have to be only one result in DB
+        (client_name,)).fetchone()["id"]   # have to be only one result in DB
 
 
+@lru_cache(1024)
 def task_type_id(cursor, task_type_name):
     """Receiving task_type_id by task type name."""
     return cursor.execute(
         'SELECT id FROM task_types WHERE task_type=?',
-        (task_type_name,)).fetchone()[0]    # have to be only one result in DB
+        (task_type_name,)).fetchone()["id"]    # have to be only one result in DB
 
 
 def task_schedule(cursor, new_task):
@@ -243,7 +245,7 @@ def tasks_reports_inserting(cursor, new_task):
             INSERT INTO reports_sheduled (task_id, report_id, start_time)
             VALUES (?, ?, ?)
             """,
-            (new_task.sheduled_task_id, report[0], datetime_now_iso_str())
+            (new_task.sheduled_task_id, report["id"], datetime_now_iso_str())
                        )
     conn.commit()
 
@@ -284,7 +286,7 @@ def get_sheduled_reports(c):
     """
     shedule = c.execute('SELECT * FROM reports_sheduled WHERE not saved').fetchall()
     return [ScheduledReport(*sheduled) for sheduled in shedule
-            if sheduled[7] <= datetime_now_iso_str()]  # restart_time <= now()
+            if sheduled["restart_time"] <= datetime_now_iso_str()]
 
 
 def check_handmade_reports(cursor, task):
@@ -355,10 +357,11 @@ def auto_report_shedule(cursor, report_data, report_amazon_id):
     conn.commit()
 
 
-def get_report_usual_name(cursor, report):
+@lru_cache(1024)
+def get_report_usual_name(cursor, report_id):
     """Get from DB report usual name."""
     return cursor.execute(""" SELECT usual_name FROM tasks_reports WHERE id=?  """,
-                          (report.report_id, )).fetchone()[0]
+                          (report_id, )).fetchone()["usual_name"]
 
 
 @log
@@ -400,7 +403,7 @@ def set_report_status(c, report):
 def get_task_type_name(cursor, task):
     """Get task type name."""
     rezult = cursor.execute(""" SELECT task_type FROM task_types WHERE id=?  """,
-                            (task.task_type_id, )).fetchone()[0]
+                            (task.task_type_id, )).fetchone()["task_type"]
     return rezult
 
 
@@ -410,7 +413,7 @@ def get_task_time(cursor, task):
 
     rezult = cursor.execute('SELECT post_time FROM tasks_sheduled WHERE id=?',
                             (task.sheduled_task_id, )
-                            ).fetchone()[0]
+                            ).fetchone()["post_time"]
     return rezult
 
 
@@ -418,7 +421,7 @@ def get_task_filenames(cursor, task):
     """Pick all report's file names from DB."""
     record_tuples = cursor.execute("SELECT filename FROM reports_sheduled WHERE task_id=?",
                                    (task.sheduled_task_id, )).fetchall()
-    file_names = [record[0] for record in record_tuples]
+    file_names = [record["filename"] for record in record_tuples]
     return file_names
 
 
@@ -445,7 +448,7 @@ def save_df_to_csv_file(df, REPORTS_FOLDER, task_file_prefix, report):
     task_file_name looks like:
         Premier_Snapshot_15.12.2020_084803_Adjustments.zip
     """
-    report_usual_name = get_report_usual_name(c, report)
+    report_usual_name = get_report_usual_name(c, report.report_id)
     file_name = "_".join([task_file_prefix, report_usual_name])
 
     arch_ext, arch_method = '.zip', 'zip'
@@ -529,8 +532,15 @@ def r_files_reading(file_names: list):
 def connect_with_client_id(c, client_id):
     """Connect to Amazon with client_id. Returns ClientConn dataclass."""
     client_conn = get_client_token(c, client_id)
-    client_conn.x = a2a.amazon_connect(client_conn)
+    client_conn.x = a2a.amazon_connect(client_conn, *get_dev_keys(c))
     return client_conn
+
+
+def get_dev_keys(cursor):
+    """Do TODO:  developer keys depends on region."""
+    #  TODO:  developer keys depends on region
+    row = cursor.execute('SELECT * FROM dev').fetchone()
+    return row["access_key"], row["secret_key"]
 
 
 #  --- main --------------------------------------------------------------------------------------
@@ -551,7 +561,10 @@ sqlite_path = parser.get("Folders.Files", "SQLite_path")
 REPORTS_FOLDER = Path(parser.get("Folders.Files", "work_path"))  # work folder path
 JOCK_FILE = Path(r"D:\OneDrive\PyCodes\SHEDULER\tenor_Mister_Bin.gif")
 
+
 conn = sqlite3.connect(sqlite_path)
+conn.row_factory = sqlite3.Row
+
 c = conn.cursor()
 
 connect_g = Get_requests()
@@ -689,6 +702,7 @@ conn.close()
 
 # TODO: set and account timeout for auto reports next check time
 # TODO: different timeout for different auto reports ???
+# time.sleep(50)
 
 # TODO: rework module pp
 
