@@ -69,7 +69,9 @@ from datetime import timedelta
 
 from models import (
     ReportsData, Report_dates,
-    delta_days, datetime_now_iso_str, now_plus_datetime_iso_str)
+    delta_days, datetime_now_iso_str, now_plus_datetime_iso_str,
+    STATUS_DONE,
+    )
 
 # from sys import getsizeof
 from pympler import asizeof     # asizeof.asizeof({})
@@ -169,7 +171,7 @@ def amazon_connect(client,
 
 def get_report_ids(x,
                    reportstart, reportend,
-                   any_diapason=False,  # ???
+                   any_diapason=False,      # ???
                    reports_types=(b"_GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2_",),
                    fromdate=None, todate=None,
                    only_DONE_=True,
@@ -251,7 +253,7 @@ ReportProcessingStatus in GetReportRequestList()
             fromdate=fromdate, todate=todate,
             max_count=b"100",
             types=reports_types,
-            processingstatuses=((b"_DONE_", ) if only_DONE_ else ()),
+            processingstatuses=((bytes(STATUS_DONE, CODING), ) if only_DONE_ else ()),
             next_token=next_token
             )
 
@@ -259,12 +261,12 @@ ReportProcessingStatus in GetReportRequestList()
         x_xml = x_list.response.text
         print(x_xml)
         root = objectify.fromstring(x_xml)
-        # "request_result" - for shorter code writing
-        request_result = (root.GetReportRequestListByNextTokenResult if next_token
-                          else root.GetReportRequestListResult)
+        # "req_result" - for shorter code writing
+        req_result = (root.GetReportRequestListByNextTokenResult if next_token
+                      else root.GetReportRequestListResult)
 
         try:     # check  "Nothing found"
-            for el in request_result.ReportRequestInfo:
+            for el in req_result.ReportRequestInfo:
                 report = Report_dates(
                     SubmittedDate=el.SubmittedDate.text,
                     StartDate=el.StartDate.text,  # [:10]
@@ -288,8 +290,7 @@ ReportProcessingStatus in GetReportRequestList()
             # TODO: branch to send mail?
             # return reports    # empty ...
 
-        next_token = None if not request_result.HasNext else bytes(request_result.NextToken.text,
-                                                                   CODING)
+        next_token = bytes(req_result.NextToken.text, CODING) if req_result.HasNext else None
         is_next = bool(next_token)
 
     return reports
@@ -318,7 +319,7 @@ def get_handmade_report_params(c, task_type_id):
 
     params_row = handmade_report_params[0]
 
-    pattern_id = params_row["id"]
+    pattern_id = params_row["id_rep_type"]
     reportstart = now_plus_datetime_iso_str(days=-params_row["minus_days_from"])
     reportend = now_plus_datetime_iso_str(days=-params_row["minus_days_to"])
     report_amz_name = params_row["report_amz_name"]
@@ -401,13 +402,13 @@ def auto_reports(c, task, report_dates):
     """
     auto_sheduled = c.execute(
         '''SELECT * FROM reports_sheduled INNER JOIN tasks_reports
-            ON reports_sheduled.report_id = tasks_reports.id
+            ON reports_sheduled.report_id = tasks_reports.id_rep_type
             WHERE NOT is_handmade and (task_id=?) ''',
         (task.sheduled_task_id,)).fetchall()
 
     rez = []
     for joint_params in auto_sheduled:
-        report_id = joint_params["id"]       # real report ID!! not report type ID here!
+        id_rep_type = joint_params["id_rep_type"]       # real report ID!! not report type ID here!
         # reportstart = report_dates.StartDate    # EQ tosnapshots dates !!
         reportstart = now_plus_datetime_iso_str(days=-365*2)  # TODO: to DB !!! ???
         reportend = datetime_now_iso_str()         # ... filled for snapshots  # TODO: to DB ???
@@ -416,7 +417,7 @@ def auto_reports(c, task, report_dates):
         min_duration = joint_params["min_duration"]     # 7 in tasks_reports
         files_to_get = joint_params["files_to_get"]
 
-        rez.append(ReportsData(report_id,
+        rez.append(ReportsData(id_rep_type,
                                reportstart, reportend,
                                min_duration,
                                report_amz_name, usual_name,
@@ -426,72 +427,100 @@ def auto_reports(c, task, report_dates):
     return rez
 
 
-def report_request_nd_report_id(x, auto_report):
+def checked_report_or_None(x, auto_report, b_fromdate=None, b_todate=None):
     """
-    Request report and get requestet report Amazon id.
+    Request report and get requestet report Amazon id if exists. If else -returns None.
 
     Parameters
     ----------
-    x :                -  AMazon API connection
-    auto_report : TYPE
+    x :   -  Amazon API connection
+    auto_report : ReportsData
 
     Returns
     -------
-    report_id:str
+    good_r_dates[0]: Report_dates or None (if was no such report)
 
     """
     # check if exist exact start-end report current type
-    b_amz_report_name = bytes(auto_report.report_amz_name, encoding=CODING)
-    reportstart = auto_report.reportstart
-    reportend = auto_report.reportend
+    b_amz_report_name = bytes(auto_report.report_amz_name, encoding=CODING)  # ??? DRY01
 
-    reports = get_report_ids(x,
-                             reportstart, reportend,
-                             reports_types=(b_amz_report_name, ),
-                             fromdate=None, todate=None)
-    # TODO: fromdate=?, todate=? save the calls
+    reports_dates = get_report_ids(x,
+                                   auto_report.reportstart, auto_report.reportend,
+                                   reports_types=(b_amz_report_name, ),
+                                   fromdate=b_fromdate, todate=b_todate)
 
-    ids = [report for report in reports
-           if (report.StartDate[:10] <= reportstart[:10]) and
-           (report.EndDate[:10] >= reportend[:10])]  # for Snapshots.
+    good_r_dates = [report for report in reports_dates
+                    if (report.StartDate[:10] <= auto_report.reportstart[:10]) and
+                    (report.EndDate[:10] >= auto_report.reportend[:10])]  # for Snapshots.
     # [:10] - для избегания 4-х часового троттлинга. Сравнивая дата+время, мы можем попасть
     # под тротлинг автоматических отчетов. при сравнении периодов учитывается только день.
     # Время отбрасывается Amazon-ом при провенрке на троттлинг.
 
-    if ids:
-        auto_report.reportstart, auto_report.reportend = ids[0].StartDate, ids[0].EndDate
-        return ids[0].amazon_id
-    #
-    #  This branch - when exact the same report not exists becouse of 30 minuts & 4 hours  pause
-    #
-    #  http://docs.developer.amazonservices.com/en_US/fba_guide/FBAGuide_DoNotRequestFBAReports.html
-    #  request.response.headers['x-mws-quota-remaining']  - rest to trottling quata
-    #
-    b_reportstart = bytes(reportstart, encoding=CODING)
-    b_reportend = bytes(reportend, encoding=CODING)
+    if good_r_dates:
+        auto_report.reportstart = good_r_dates[0].StartDate
+        auto_report.reportend = good_r_dates[0].EndDate
+
+    return good_r_dates[0] if good_r_dates else None
+
+
+def report_request_id(x, auto_report, b_fromdate=None, b_todate=None):
+    """Request report and return report_request_id from Amazon."""
+    b_amz_report_name = bytes(auto_report.report_amz_name, encoding=CODING)  # ??? DRY01
+    b_reportstart = bytes(auto_report.reportstart, encoding=CODING)
+    b_reportend = bytes(auto_report.reportend, encoding=CODING)
     request = try_or_sleep(x.request_report)(b_amz_report_name,
                                              start_date=b_reportstart,
                                              end_date=b_reportend,)
 
     root = objectify.fromstring(request.response.text)
     request_id = root.RequestReportResult.ReportRequestInfo.ReportRequestId.text
+
+    return request_id
+
+
+def get_status_by_request_id(x, request_id):
+    """"""
+    # TODO: all
+    """
+    <?xml version="1.0"?>
+    <GetReportRequestListResponse xmlns="http://mws.amazonaws.com/doc/2009-01-01/">
+      <GetReportRequestListResult>
+        <HasNext>false</HasNext>
+        <ReportRequestInfo>
+          <ReportProcessingStatus>_DONE_</ReportProcessingStatus>
+          <EndDate>2021-01-15T17:45:25+00:00</EndDate>
+          <Scheduled>false</Scheduled>
+          <ReportRequestId>203512018642</ReportRequestId>
+          <SubmittedDate>2021-01-15T15:52:04+00:00</SubmittedDate>
+          <CompletedDate>2021-01-15T15:52:37+00:00</CompletedDate>
+          <GeneratedReportId>26353847633018642</GeneratedReportId>
+          <ReportType>_GET_FBA_REIMBURSEMENTS_DATA_</ReportType>
+          <StartedProcessingDate>2021-01-15T15:52:09+00:00</StartedProcessingDate>
+          <StartDate>2019-01-16T17:45:24+00:00</StartDate>
+        </ReportRequestInfo>
+      </GetReportRequestListResult>
+      <ResponseMetadata>
+        <RequestId>77494ccc-22f2-4504-bafe-e8da3d76c132</RequestId>
+      </ResponseMetadata>
+    </GetReportRequestListResponse>
+    """
     max_exceptions, except_delay = 10, 60       # can weight 10 times 60 secs  TODO:
     time.sleep(except_delay*3)    # weight a bit for Amazon quering to save 1 call before trottling
     for _ in range(max_exceptions):
-        report_data = try_or_sleep(x.get_report_list)(
+        report_data = try_or_sleep(x.get_report_request_list)(
             requestids=(bytes(request_id, encoding=CODING),)
             )
         root = objectify.fromstring(report_data.response.text)
         try:
-            result = root.GetReportListResult.ReportInfo
-            amazon_id = result.ReportId.text
+            result = root.GetReportRequestListResult.ReportRequestInfo
+            status = result.ReportProcessingStatus.text
             break
         except AttributeError:
             time.sleep(except_delay)
     else:
         assert False, f"{max_exceptions} times was {str(AttributeError)}"  # TODO: send answer ???
 
-    return amazon_id
+    return status
 
 
 def get_amz_report_name(c, report):

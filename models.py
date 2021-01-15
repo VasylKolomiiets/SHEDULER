@@ -89,13 +89,13 @@ class ClientConn:
 class ReportsData:
     """структура для данных SQLite очередного отчета в задании на обработку."""
 
-    report_id: int         # - specific ID of this kind report in current task
-    reportstart: str       # data in ISO format
-    reportend: str         # data in ISO format
-    min_duration: int      # min_duration of the report period
-    report_amz_name: str   # Amazon API report name
+    id_rep_type: int        # - specific ID of this kind report in current task
+    reportstart: str        # data in ISO format
+    reportend: str          # data in ISO format
+    min_duration: int       # min_duration of the report period
+    report_amz_name: str    # Amazon API report name
     usual_name: str
-    files_to_get: str      # Type of reports processing  (ALL / LAST)
+    files_to_get: str       # Type of reports processing  (ALL / LAST)
 
 
 @dataclass
@@ -118,7 +118,7 @@ def datetime_now_iso_str():
     return datetime.now().isoformat()[:19]
 
 
-def now_plus_datetime_iso_str(days=0, hours=0, minutes=0, seconds=0.5):
+def now_plus_datetime_iso_str(days=0, hours=0, minutes=0, seconds=0):
     """Form  datetime.now() + seconds=0.5 in ISO format string without timezone."""
     return (datetime.now() + dt.timedelta(days=days,
                                           hours=hours,
@@ -151,3 +151,7 @@ _DONE_NO_DATA_
 STATUS_SCHED = "_a2a_SCHED_"
 STATUS_HAS_REQUEST_ID = "_a2a_HAS_RQID_"
 STATUS_NO_HM_REPORT = "_a2a_HAS_NO_HMR"
+
+STATUS_DONE = "_DONE_"
+
+# str(row[0], encoding="utf-8")

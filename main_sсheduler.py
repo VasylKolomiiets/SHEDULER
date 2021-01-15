@@ -37,7 +37,7 @@
 #        process_new_query
 #   if time_to_check_tasks:
 #      read the tasks:
-#      for "_done_" reports  get the reports   (need grooping to pakadge???)
+#      for "_DONE_" reports  get the reports   (need grooping to pakadge???)
 #      save the reports to disk
 #      change subtask status it the shedule (save the saved file name to DB? )
 #      for other kinds of status - reset the check time
@@ -52,6 +52,8 @@
     # midnight = dt.datetime.combine(now.date(), dt.time())
     # time_from_midnight = (now - midnight)
 """
+from models import log, logging_init    # for logging
+
 import sqlite3
 from functools import lru_cache
 
@@ -70,11 +72,10 @@ import api2api as a2a
 from api2api import CODING
 
 from models import (
-    log, logging_init,
     # models dataclasses
     ClientConn, NewTask, ScheduledReport, ScheduledTask,
     datetime_now_iso_str, now_plus_datetime_iso_str,  # restart_datetime_iso_str,
-    STATUS_SCHED,
+    STATUS_SCHED, STATUS_DONE, STATUS_HAS_REQUEST_ID,
                     )
 
 from my_utils import secure_filename
@@ -87,7 +88,7 @@ from data_processing import data_processing, excel_writer
 from excel_formatting import excel_file_formatting
 
 
-# @lru_cache(1024)
+@lru_cache(1024)
 def get_client_token(cursore, client_id):
     """Connect to Amazon server."""
     record = cursore.execute(f'SELECT * FROM auth_code WHERE id={client_id}').fetchone()
@@ -161,7 +162,7 @@ def add_new_time_to_check_news(cursor, hours=2):
     conn.commit()
 
 
-# @lru_cache(1024)
+@lru_cache(1024)
 def get_client_id_by_name(cursor, client_name):
     """Receiving client_id by client name."""
     return cursor.execute(
@@ -169,7 +170,7 @@ def get_client_id_by_name(cursor, client_name):
         (client_name,)).fetchone()["id"]   # have to be only one result in DB
 
 
-# @lru_cache(1024)
+@lru_cache(1024)
 def task_type_id(cursor, task_type_name):
     """Receiving task_type_id by task type name."""
     return cursor.execute(
@@ -242,10 +243,11 @@ def tasks_reports_inserting(cursor, new_task):
     for report in reports:
         cursor.execute(  # BLANK report adding - without time to check and real amazon report+id
             """
-            INSERT INTO reports_sheduled (task_id, report_id, start_time)
-            VALUES (?, ?, ?)
+            INSERT INTO reports_sheduled (task_id, report_id, start_time, status)
+            VALUES (?, ?, ?, ?)
             """,
-            (new_task.sheduled_task_id, report["id"], datetime_now_iso_str())
+            (new_task.sheduled_task_id, report["id_rep_type"], datetime_now_iso_str(),
+             STATUS_SCHED)
                        )
     conn.commit()
 
@@ -284,7 +286,9 @@ def get_sheduled_reports(c):
     -------
     list   of sheduled to DB reports
     """
-    shedule = c.execute('SELECT * FROM reports_sheduled WHERE not saved').fetchall()
+    # TODO: check for _a2a_sched_ for prev canceled task akkounting?
+    shedule = c.execute("""SELECT * FROM reports_sheduled WHERE NOT saved"""
+                        ).fetchall()
     return [ScheduledReport(*sheduled) for sheduled in shedule
             if sheduled["restart_time"] <= datetime_now_iso_str()]
 
@@ -326,41 +330,39 @@ def hm_report_shedule(cursor, task, report_data, report_dates):
 
     #  store the Amazon report ID  AND  time to get report - "restart_time"
     cursor.execute("""
-                   UPDATE reports_sheduled SET status=?, restart_time=?,
-                           amzn_rprt_id=?, date_from=?, date_to=?
+                   UPDATE reports_sheduled SET
+                           status=?, restart_time=?, amzn_rprt_id=?, date_from=?, date_to=?
                    WHERE task_id=? AND report_id=?
                    """,
-                   (STATUS_SCHED, restart_time,
+                   (STATUS_DONE, restart_time,
                     report_dates.amazon_id, report_dates.StartDate, report_dates.EndDate,
-                    task.sheduled_task_id, report_data.report_id)
+                    task.sheduled_task_id, report_data.id_rep_type)
                    )
     conn.commit()
 
 
-def auto_report_shedule(cursor, report_data, report_amazon_id):
-    """Find record with blank record on report_type.
-
-    # TODO: 1st - check DB for sheduled reports for best time setting
-    """
+def set_auto_report_request_id(cursor, task, report_data, request_report_id):
+    """"""
+    # TODO: add timedelta:
     restart_time = now_plus_datetime_iso_str()
 
     #  store the Amazon report ID  AND  time to get report - "restart_time"
     cursor.execute("""
-                   UPDATE reports_sheduled SET status=?, restart_time=?,
-                   amzn_rprt_id=?, date_from=?, date_to=?
-                   WHERE id=?
+                   UPDATE reports_sheduled SET
+                       status=?, restart_time=?, amzn_rqst_id=?, date_from=?, date_to=?
+                   WHERE task_id=? AND report_id=?
                    """,
-                   (STATUS_SCHED, restart_time,
-                    report_amazon_id, report_data.reportstart, report_data.reportend,
-                    report_data.report_id)
+                   (STATUS_HAS_REQUEST_ID, restart_time,
+                    request_report_id, report_data.reportstart, report_data.reportend,
+                    task.sheduled_task_id, report_data.id_rep_type)
                    )
     conn.commit()
 
 
-# @lru_cache(1024)
+@lru_cache(1024)
 def get_report_usual_name(cursor, report_id):
     """Get from DB report usual name."""
-    return cursor.execute(""" SELECT usual_name FROM tasks_reports WHERE id=?  """,
+    return cursor.execute(""" SELECT usual_name FROM tasks_reports WHERE id_rep_type=?  """,
                           (report_id, )).fetchone()["usual_name"]
 
 
@@ -459,7 +461,7 @@ def save_df_to_csv_file(df, REPORTS_FOLDER, task_file_prefix, report):
     return file_name + arch_ext
 
 
-def pick_finished_tasks(cursor, renewed_tasks: set) -> dict:
+def pick_finished_tasks(cursor) -> dict:
     """
     Check reports to be full set of _DONE_ status.
 
@@ -470,13 +472,15 @@ def pick_finished_tasks(cursor, renewed_tasks: set) -> dict:
 
     """
     tasks_to_work_out = dict()
-    for task in renewed_tasks:  # TODO: sum() == count()
-        rezult = cursor.execute("""SELECT status == ? as zo FROM reports_sheduled
+    # select "opened" tasks
+
+    for task_id, task in get_sheduled_tasks(cursor).items():  # TODO: sum() == count()
+        rezult = cursor.execute("""SELECT status==? as zo FROM reports_sheduled
                                     WHERE task_id=? and saved""",
-                                ('_DONE_', task.sheduled_task_id, )).fetchall()
+                                (STATUS_DONE, task_id, )).fetchall()
         zeroones = [row["zo"] for row in rezult]
         if all(zeroones):
-            tasks_to_work_out[task.sheduled_task_id] = task
+            tasks_to_work_out[task_id] = task
 
     return tasks_to_work_out
 
@@ -635,36 +639,55 @@ while True:     # for i in range(20):
 
             #   auto reports requesting (or creating if needs)
             for auto_report in a2a.auto_reports(c, sch_task, hm_report_dates):
-                report_amazon_id = a2a.report_request_nd_report_id(x, auto_report)
-                auto_report_shedule(c, auto_report, report_amazon_id)
-            # g mark as picked
+                # prevent 30 minuts or 4 hours pause for creating reports witn the same dates
+                #
+                #  http://docs.developer.amazonservices.com/en_US/fba_guide/FBAGuide_DoNotRequestFBAReports.html
+                #  request.response.headers['x-mws-quota-remaining']  - rest to trottling quata
+                #
+                au_report_dates = a2a.checked_report_or_None(x, auto_report,
+                                                             b_fromdate=b_fromdate,
+                                                             b_todate=b_todate)
+                if au_report_dates:
+                    hm_report_shedule(c, sch_task, auto_report, au_report_dates)
+                    continue
+
+                #  This branch - when exact the same report does not exist
+                #  Have to made request for report creating
+                request_id = a2a.report_request_id(x, auto_report,
+                                                   b_fromdate=b_fromdate, b_todate=b_todate)
+                set_auto_report_request_id(c, sch_task, auto_report, request_id)
+                # ??? set report renew datatime here? for further processing ???
+            # mark g as picked  ???
         # ====================================================================================
         add_new_time_to_check_news(c, hours=NEWS_CHECKING_TIME_STEP_HOURS / 30)
 
     #  --
     sheduled_reports = get_sheduled_reports(c)
     print({f"sheduled_reports={sheduled_reports}"})
-    tasks_with_new_done_report = set()
+    file_was_not_saved = True
     for report in sheduled_reports:
         task = sheduled_tasks[report.task_id]   # get_report_task
         task_f_prefix = task.files_prefix
         x = clients_conn[task.client_id].x
-        if report.status == "_DONE_":   # _DONE_NO_DATA_  TODO:
+        if report.status == STATUS_HAS_REQUEST_ID:
+            report.status = a2a.get_status_by_request_id(x, report.amzn_rqst_id)
+            # store NEW report.status to DB  & change restart_time ))
+            set_report_status(c, report)
+        if report.status == STATUS_DONE:   # _DONE_NO_DATA_  TODO:
             df = a2a.get_report_file(x, report.amzn_rprt_id)
             # put it in file
             file_name = save_df_to_csv_file(df, REPORTS_FOLDER, task_f_prefix, report)
             # put the file name to the record DB and mark it as 'saved'
             mark_report_as_saved(c, report.id_sheduled, file_name)
-            tasks_with_new_done_report.add(task)
-        else:  # RENEW STATUS
-            report.status = a2a.get_current_status(c, x, report)
-            # store NEW report.status to DB  & change restart_time ))
-            set_report_status(c, report)
+            file_was_not_saved = False
+        else:
+            # TODO: process situation with _CANCELLED_ and _DONE_NO_DATA_ statuses as known
+            assert False, report.status
 
-    if not tasks_with_new_done_report:      # TODO: stop ir and check all? not only changed
+    if file_was_not_saved:
         continue
-    # here was at least one report with "_DONE_" status
-    finished_tasks = pick_finished_tasks(c, tasks_with_new_done_report)
+    # here was report file saved  at least for one report with "_DONE_" status
+    finished_tasks = pick_finished_tasks(c)
     for task_id, task in finished_tasks.items():
         task_f_prefix = task.files_prefix
         # data_processing(df_rec, df_adj, df_rei)
@@ -698,14 +721,14 @@ while True:     # for i in range(20):
     time.sleep(TIME_TO_SLEEP)
 conn.close()
 
-# TODO: split requests and report status checking
-
 # TODO: in case of Error 401 skip task and (?) send a letter
 # TODO: process situation with _CANCELLED_ and _DONE_NO_DATA_ statuses as known
 
 # TODO: set and account timeout for auto reports next check time
 # TODO: different timeout for different auto reports ???
 # time.sleep(50)
+
+# TODO: group reports by client connection ???
 
 # TODO: rework module pp
 
