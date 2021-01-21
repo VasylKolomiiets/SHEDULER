@@ -23,6 +23,10 @@ def createparser(path):
     parser.add_section("Folders.Files")
     parser.set("Folders.Files", "SQLite_path", "E:\\OneDrive\\PyCodes\\SHEDULER\\clients.db")
     parser.set("Folders.Files", "work_path", "E:\\OneDrive\\PyCodes\\SHEDULER\\work_path")
+    parser.set("Folders.Files", "jock_file", "D:\\OneDrive\\PyCodes\\SHEDULER\\tenor_Mister_Bin.gif")
+
+    parser.add_section("Email") 
+    parser.set("Email", "boss_email", "ychudnovs@gmail.com")
 
     with open(path, "w") as config_file:
         parser.write(config_file)

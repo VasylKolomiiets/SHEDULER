@@ -51,8 +51,9 @@ MWSError: <?xml version="1.0"?>
   <RequestID>7b170ab1-675b-4b10-85ef-940fd22ac78b</RequestID>
 </ErrorResponse>
 """
-from models import log    # for logging
-
+from functools import lru_cache
+from logger import log
+# from models import log    # for logging
 
 from lxml import objectify
 
@@ -70,7 +71,7 @@ from datetime import timedelta
 from models import (
     ReportsData, Report_dates,
     delta_days, datetime_now_iso_str, now_plus_datetime_iso_str,
-    STATUS_DONE,
+    STATUS,
     )
 
 # from sys import getsizeof
@@ -253,7 +254,7 @@ ReportProcessingStatus in GetReportRequestList()
             fromdate=fromdate, todate=todate,
             max_count=b"100",
             types=reports_types,
-            processingstatuses=((bytes(STATUS_DONE, CODING), ) if only_DONE_ else ()),
+            processingstatuses=((bytes(STATUS["DONE"], CODING), ) if only_DONE_ else ()),
             next_token=next_token
             )
 
@@ -286,9 +287,8 @@ ReportProcessingStatus in GetReportRequestList()
                 except AttributeError:
                     continue
         except AttributeError:
-            assert False, "Nothing found"
-            # TODO: branch to send mail?
-            # return reports    # empty ...
+            print("from get_report_ids:  Nothing found")
+            return []
 
         next_token = bytes(req_result.NextToken.text, CODING) if req_result.HasNext else None
         is_next = bool(next_token)
@@ -383,9 +383,8 @@ def check_chains_count(reports_dates, r_start, DAYS_REPORT_FRESH):
 
 @log
 def auto_reports(c, task, report_dates):
-    # TODO: now only one report each type!!
+    # TODO: now only one report each type!!  check parameter __ALL__ / __ONE__
     # it only for - SNAPSHOTS - not date range!
-    # TODO:  ceck parameter __ALL__ / __ONE__
     """
     Auto report parameters collectinh.
 
@@ -408,7 +407,7 @@ def auto_reports(c, task, report_dates):
 
     rez = []
     for joint_params in auto_sheduled:
-        id_rep_type = joint_params["id_rep_type"]       # real report ID!! not report type ID here!
+        id_rep_type = joint_params["id_rep_type"]
         # reportstart = report_dates.StartDate    # EQ tosnapshots dates !!
         reportstart = now_plus_datetime_iso_str(days=-365*2)  # TODO: to DB !!! ???
         reportend = datetime_now_iso_str()         # ... filled for snapshots  # TODO: to DB ???
@@ -478,9 +477,8 @@ def report_request_id(x, auto_report, b_fromdate=None, b_todate=None):
     return request_id
 
 
-def get_status_by_request_id(x, request_id):
+def get_status_by_rqst_id(x, request_id):
     """"""
-    # TODO: all
     """
     <?xml version="1.0"?>
     <GetReportRequestListResponse xmlns="http://mws.amazonaws.com/doc/2009-01-01/">
@@ -504,8 +502,7 @@ def get_status_by_request_id(x, request_id):
       </ResponseMetadata>
     </GetReportRequestListResponse>
     """
-    max_exceptions, except_delay = 10, 60       # can weight 10 times 60 secs  TODO:
-    time.sleep(except_delay*3)    # weight a bit for Amazon quering to save 1 call before trottling
+    max_exceptions, except_delay = 4, 60       # can weight 4 times 60 secs
     for _ in range(max_exceptions):
         report_data = try_or_sleep(x.get_report_request_list)(
             requestids=(bytes(request_id, encoding=CODING),)
@@ -514,24 +511,31 @@ def get_status_by_request_id(x, request_id):
         try:
             result = root.GetReportRequestListResult.ReportRequestInfo
             status = result.ReportProcessingStatus.text
+            try:
+                amzn_report_id = result.GeneratedReportId.text
+            except AttributeError:
+                amzn_report_id = None
             break
         except AttributeError:
             time.sleep(except_delay)
     else:
-        assert False, f"{max_exceptions} times was {str(AttributeError)}"  # TODO: send answer ???
+        assert False, f"{max_exceptions} times was {str(AttributeError)}"
+        # TODO: send answer ??? or return None, None ))
+    return status, amzn_report_id
 
-    return status
 
-
-def get_amz_report_name(c, report):
+@lru_cache(1024)
+def get_amz_report_name(c, id_rep_type):
     """Get standart Amazon report name."""
-    return c.execute('SELECT report_amz_name FROM tasks_reports WHERE id=?', (report.report_id, )
+    return c.execute('SELECT report_amz_name FROM tasks_reports WHERE id=?', (id_rep_type, )
                      ).fetchone()[0]
 
 
+# TODO: del it
+'''
 def get_current_status(c, x, report):
-    """Get report current status on Amazon."""      # TODO: save to mongoDB
-    amz_report_name = get_amz_report_name(c, report)
+    """Get report current status on Amazon."""
+    amz_report_name = get_amz_report_name(c, report.report_id)
 
     matching_reports = get_report_ids(x,
                                       report.date_from, report.date_to,
@@ -544,7 +548,7 @@ def get_current_status(c, x, report):
     status = statuses[0]
     report.status = status
     return status
-
+'''
 
 def text_to_df(text, encoding, region="USA", sep="\t"):
     '''

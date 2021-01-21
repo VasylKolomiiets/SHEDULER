@@ -112,7 +112,6 @@ class Report_dates:
 
 # ------------------------------- end dataclass block -----------
 
-
 def datetime_now_iso_str():
     """Take  datetime now in ISO format."""
     return datetime.now().isoformat()[:19]
@@ -147,11 +146,15 @@ _CANCELLED_
 _DONE_
 _DONE_NO_DATA_
 """
-
-STATUS_SCHED = "_a2a_SCHED_"
-STATUS_HAS_REQUEST_ID = "_a2a_HAS_RQID_"
-STATUS_NO_HM_REPORT = "_a2a_HAS_NO_HMR"
-
-STATUS_DONE = "_DONE_"
+STATUS = {
+    "a2a_SCHED": "_a2a_SCHED_",
+    "a2a_HAS_RQST_ID": "_a2a_HAS_RQST_ID_",
+    "a2a_HAS_NO_HMR": "_a2a_HAS_NO_HMR_",
+    "SUBMITTED": "_SUBMITTED_",
+    "IN_PROGRESS": "_IN_PROGRESS_",
+    "CANCELLED": "_CANCELLED_",
+    "DONE": "_DONE_",
+    "DONE_NO_DATA": "_DONE_NO_DATA_",
+    }
 
 # str(row[0], encoding="utf-8")
